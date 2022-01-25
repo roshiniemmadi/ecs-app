@@ -1,29 +1,17 @@
 version: 0.2
 
-
 phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - aws --version
-      - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
-      - REPOSITORY_URI=336369920320.dkr.ecr.us-east-1.amazonaws.com/ecsapp
-      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
+      - $(aws ecr get-login --no-include-email --region eu-west-1)
   build:
     commands:
-      - echo Build started on `date`
-      - echo Building the Docker image...
-      - docker build -t 336369920320.dkr.ecr.us-east-1.amazonaws.com/ecsapp:latest .
-      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+      - echo Building the Docker image...          
+      - docker build -t maxmind:latest .
+      - docker tag maxmind:latest 336369920320.dkr.ecr.us-east-1.amazonaws.com/app-demo:latest      
   post_build:
     commands:
       - echo Build completed on `date`
-      - echo Pushing the Docker images...
-      - docker push $REPOSITORY_URI:latest
-      - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - echo Writing image definitions file...
-      - printf '[{"name":"app-demo","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
-      - cat imagedefinitions.json 
-artifacts:
-    files: imagedefinitions.json
+      - echo Pushing the Docker image...
+      - docker push 336369920320.dkr.ecr.us-east-1.amazonaws.com/app-demo:latest
